@@ -11,11 +11,8 @@ var uristring = process.env.MONGODB_URI || 'mongodb://localhost/HelloMongoose';
 mongoose.connect(uristring, { useNewUrlParser: true });
 var db = mongoose.connection;
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-
 // Init App
-var app = express();
+const app = express();
 
 // View Engine
 app.set('views', path.join(__dirname, 'views'));
@@ -39,6 +36,10 @@ app.use(session({
 // Passport init
 app.use(passport.initialize());
 app.use(passport.session());
+app.use((req, res, next) => {
+  res.locals.currentUser = req.user;
+  next();
+})
 
 // Connect Flash
 app.use(flash());
@@ -52,8 +53,13 @@ app.use(function (req, res, next) {
   next();
 });
 
+const index = require('./routes/index');
+const users = require('./routes/users');
+const items = require('./routes/items');
+
 app.use('/', index);
 app.use('/users', users);
+app.use('/items', items);
 
 // Set Port
 app.set('port', (process.env.PORT || 8080));
